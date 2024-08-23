@@ -37,7 +37,8 @@ interface IAgreementManager {
   error InvalidSignature();
   error SenderShouldBeParty();
   error InvalidAddress();
-  error InsufficientPaymentToken();
+  error InsufficientBalance();
+  error InsufficientAllowance();
 
   /**
    * @notice Emitted when a new agreement is created.
