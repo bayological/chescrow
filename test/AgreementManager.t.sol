@@ -103,8 +103,9 @@ contract AgreementManagerTest is Test {
 
   /* ==================== Mutative Functions ==================== */
 
-  /*********************** Create Agreement ***********************/
-
+  /**
+   * Create Agreement **********************
+   */
   function test_createAgreement_whenDeadlineIsInPast_shouldRevert() external {
     // Set the block number to the future
     vm.roll(100);
@@ -159,9 +160,8 @@ contract AgreementManagerTest is Test {
     testAgreement.termsDocumentHash = keccak256("fakeHashOfTermsDocument");
 
     // Prepend the Ethereum-specific message prefix
-    bytes32 messageHash = keccak256(
-      abi.encodePacked("\x19Ethereum Signed Message:\n32", testAgreement.termsDocumentHash)
-    );
+    bytes32 messageHash =
+      keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", testAgreement.termsDocumentHash));
 
     // Sign the Ethereum-specific message hash
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(serviceProviderPK, messageHash);
@@ -186,8 +186,9 @@ contract AgreementManagerTest is Test {
     testee.createAgreement(testAgreement, signature);
   }
 
-  /*********************** Accept Agreement ***********************/
-
+  /**
+   * Accept Agreement **********************
+   */
   function test_acceptAgreement_whenAgreementNotFound_shouldRevert() external {
     vm.expectRevert(IAgreementManager.AgreementNotFound.selector);
     testee.acceptAgreement(123, "");
