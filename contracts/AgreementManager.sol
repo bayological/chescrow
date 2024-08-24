@@ -125,7 +125,7 @@ contract AgreementManager is IAgreementManager, Ownable {
 
     IERC20 paymentToken = IERC20(agreement.paymentToken);
     uint256 paymentAmount = agreement.paymentAmount;
-    
+
     if (paymentToken.balanceOf(msg.sender) < paymentAmount) revert InsufficientBalance();
     if (paymentToken.allowance(msg.sender, address(this)) < paymentAmount) revert InsufficientAllowance();
 
@@ -137,6 +137,22 @@ contract AgreementManager is IAgreementManager, Ownable {
     paymentToken.safeTransferFrom(msg.sender, address(this), paymentAmount);
 
     emit AgreementAccepted(agreementId);
+  }
+
+  /**
+   * @notice Sets agreement to execution state.
+   * @param agreementId The ID of the agreement to execute.
+   */
+  function executeAgreement(uint256 agreementId) external returns (bool)
+  {
+    Agreement storage agreement = agreements[agreementId];
+    if (agreement.id == 0) revert AgreementNotFound();
+    if (agreement.status != Status.ACCEPTED) revert AgreementNotInDraft(); 
+    if (msg.sender != agreement.serviceProvider) revert SenderShouldBeParty();
+
+    agreement.status = Status.EXECUTION;
+    emit AgreementInExecution(agreementId);
+    return true;
   }
 
   /**
@@ -163,6 +179,7 @@ contract AgreementManager is IAgreementManager, Ownable {
   function addPaymentTokens(address[] memory paymentTokens) public onlyOwner {
     for (uint256 i = 0; i < paymentTokens.length; i++) {
       isPaymentToken[paymentTokens[i]] = true;
+      emit PaymentTokenAdded(paymentTokens[i]);
     }
   }
 

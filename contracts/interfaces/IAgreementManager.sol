@@ -75,6 +75,18 @@ interface IAgreementManager {
   event AgreementCompleted(uint256 agreementId);
 
   /**
+   * @notice Emitted when a payment token is added to the accepted tokens list.
+   * @param token The address of the token that was added.
+   */
+  event PaymentTokenAdded(address token);
+
+  /**
+   * @notice Emitted when an agreement is in executuion.
+   * @param agreementId The ID of the executed agreement.
+   */
+  event AgreementInExecution(uint256 agreementId);
+
+  /**
    * @notice Creates an agreement with the specified details.
    * @param agreement The Agreement struct containing all necessary details.
    * @param signature The signature of the service provider.
@@ -95,6 +107,12 @@ interface IAgreementManager {
    * @param signature Terms hash signed by client.
    */
   function acceptAgreement(uint256 agreementId, bytes memory signature) external;
+
+  /**
+   * @notice Sets agreement to execution state.
+   * @param agreementId The ID of the agreement to execute.
+   */
+  function executeAgreement(uint256 agreementId) external returns (bool);
 
   /**
    * @notice Marks an agreement as completed.
