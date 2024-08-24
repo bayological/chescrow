@@ -29,7 +29,7 @@ abstract contract BaseScript is Script {
       broadcaster = from;
     } else {
       mnemonic = vm.envOr({ name: "MNEMONIC", defaultValue: TEST_MNEMONIC });
-      (broadcaster, ) = deriveRememberKey({ mnemonic: mnemonic, index: 0 });
+      (broadcaster,) = deriveRememberKey({ mnemonic: mnemonic, index: 0 });
     }
   }
 
