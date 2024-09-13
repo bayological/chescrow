@@ -33,12 +33,14 @@ interface IAgreementManager {
   error AgreementNotFound();
   error Unauthorized();
   error AgreementNotInDraft();
+  error AgreementNotAccepted();
   error AgreementAlreadyCompleted();
   error InvalidSignature();
   error SenderShouldBeParty();
   error InvalidAddress();
   error InsufficientBalance();
   error InsufficientAllowance();
+  error AgreementNotInExecution();
 
   /**
    * @notice Emitted when a new agreement is created.
@@ -81,10 +83,29 @@ interface IAgreementManager {
   event PaymentTokenAdded(address token);
 
   /**
-   * @notice Emitted when an agreement is in executuion.
+   * @notice Emitted when an agreement is fulfilled.
+   * @param agreementId The ID of the fulfilled agreement.
+   */
+  event AgreementFulfilled(uint256 agreementId);
+
+  /**
+   * @notice Emitted when an agreement execution has started.
    * @param agreementId The ID of the executed agreement.
    */
-  event AgreementInExecution(uint256 agreementId);
+  event AgreementExecutionStarted(uint256 agreementId);
+
+  /**
+   * @notice Emitted when a client accepts the fulfillment of an agreement.
+   * @param agreementId The ID of the agreement whose fulfillment was accepted.
+   */
+  event AgreementFulfillmentAccepted(uint256 agreementId);
+
+  /**
+   * @notice Emitted when a dispute is started for an agreement.
+   * @param agreementId The ID of the agreement under dispute.
+   * @param initiator The address of the party initiating the dispute.
+   */
+  event DisputeStarted(uint256 agreementId, address initiator);
 
   /**
    * @notice Creates an agreement with the specified details.
@@ -109,16 +130,32 @@ interface IAgreementManager {
   function acceptAgreement(uint256 agreementId, bytes memory signature) external;
 
   /**
-   * @notice Sets agreement to execution state.
-   * @param agreementId The ID of the agreement to execute.
+   * @notice Marks the agreement as in progress, indicating the service provider has started work.
+   * @param agreementId The ID of the agreement to start.
+   * @return success True if the agreement status was successfully updated.
    */
-  function executeAgreement(uint256 agreementId) external returns (bool);
+  function startAgreementExecution(uint256 agreementId) external returns (bool success);
 
   /**
-   * @notice Marks an agreement as completed.
-   * @param agreementId The ID of the agreement to mark as completed.
+   * @notice Marks an agreement as fulfilled by the service provider.
+   * @param agreementId The ID of the agreement to mark as fulfilled.
+   * @return success True if the agreement status was successfully updated.
    */
-  function completeAgreement(uint256 agreementId) external;
+  function fulfillAgreement(uint256 agreementId) external returns (bool success);
 
-  // TODO: Add functions for other states (e.g. dispute, execution)
+  /**
+   * @notice Allows the client to accept the fulfillment of the agreement, closing it.
+   * @param agreementId The ID of the agreement to accept as fulfilled.
+   * @return success True if the agreement status was successfully updated.
+   */
+  function acceptFulfillment(uint256 agreementId) external returns (bool success);
+
+  // /**
+  //  * @notice Starts a dispute for the agreement.
+  //  * @param agreementId The ID of the agreement to dispute.
+  //  * @return success True if the dispute was successfully initiated.
+  //  */
+  // function startDispute(uint256 agreementId) external returns (bool success);
+
+  // TODO: Dispute resolution..
 }

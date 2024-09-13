@@ -140,34 +140,52 @@ contract AgreementManager is IAgreementManager, Ownable {
   }
 
   /**
-   * @notice Sets agreement to execution state.
-   * @param agreementId The ID of the agreement to execute.
+   * @notice Marks the agreement as in progress, indicating the service provider has started work.
+   * @param agreementId The ID of the agreement to start.
+   * @return success True if the agreement status was successfully updated.
    */
-  function executeAgreement(uint256 agreementId) external returns (bool)
-  {
+  function startAgreementExecution(uint256 agreementId) external returns (bool success) {
     Agreement storage agreement = agreements[agreementId];
     if (agreement.id == 0) revert AgreementNotFound();
-    if (agreement.status != Status.ACCEPTED) revert AgreementNotInDraft(); 
+    if (agreement.status != Status.ACCEPTED) revert AgreementNotAccepted();
     if (msg.sender != agreement.serviceProvider) revert SenderShouldBeParty();
 
     agreement.status = Status.EXECUTION;
-    emit AgreementInExecution(agreementId);
+    emit AgreementExecutionStarted(agreementId);
     return true;
   }
 
   /**
-   * @notice Marks an agreement as completed.
-   * @param agreementId The ID of the agreement to mark as completed.
+   * @notice Marks an agreement as fulfilled by the service provider.
+   * @param agreementId The ID of the agreement to mark as fulfilled.
+   * @return success True if the agreement status was successfully updated.
    */
-  function completeAgreement(uint256 agreementId) external {
+  function fulfillAgreement(uint256 agreementId) external returns (bool success) {
     Agreement storage agreement = agreements[agreementId];
     if (agreement.id == 0) revert AgreementNotFound();
-    if (agreement.status != Status.ACCEPTED) revert AgreementNotInDraft(); // Should probably add a different error message here
-    if (msg.sender != agreement.serviceProvider && msg.sender != agreement.client) revert SenderShouldBeParty();
+    if (agreement.status != Status.EXECUTION) revert AgreementNotInExecution();
+    if (msg.sender != agreement.serviceProvider) revert SenderShouldBeParty();
 
     agreement.status = Status.FULFILLED;
 
     emit AgreementCompleted(agreementId);
+    return true;
+  }
+
+  /**
+   * @notice Allows the client to accept the fulfillment of the agreement, closing it.
+   * @param agreementId The ID of the agreement to accept as fulfilled.
+   * @return success True if the agreement status was successfully updated.
+   */
+  function acceptFulfillment(uint256 agreementId) external returns (bool success) {
+    Agreement storage agreement = agreements[agreementId];
+    if (agreement.id == 0) revert AgreementNotFound();
+    if (agreement.status != Status.FULFILLED) revert AgreementNotInExecution();
+    if (msg.sender != agreement.client) revert SenderShouldBeParty();
+
+    agreement.status = Status.FULFILLED;
+    emit AgreementCompleted(agreementId);
+    return true;
   }
 
   /*********************** Payment Tokens ***********************/
